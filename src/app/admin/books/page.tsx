@@ -11,7 +11,7 @@ export default function AdminBookList() {
   useEffect(() => {
     const token = localStorage.getItem('token');
 
-    fetch('http://localhost:3000/books/available', {
+    fetch('http://localhost:3000/guests/books', {
       headers: {
         Authorization: `Bearer ${token}`,
       },

@@ -28,7 +28,7 @@ export default function LoginPage() {
     document.documentElement.classList.toggle('dark', newTheme === 'dark');
   };
 
-  const handleLogin = async (e: React.FormEvent) => {
+  /*const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       const res = await fetch('http://localhost:3000/auth/login', {
@@ -44,7 +44,50 @@ export default function LoginPage() {
     } catch (err: any) {
       setError(err.message);
     }
-  };
+  };*/
+
+
+  const handleLogin = async (e: React.FormEvent) => {
+  e.preventDefault();
+  try {
+    const res = await fetch('http://localhost:3000/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
+    });
+
+    if (!res.ok) throw new Error('Invalid credentials');
+    const data = await res.json();
+    localStorage.setItem('token', data.access_token);
+
+    // Fetch user profile
+    const profileRes = await fetch('http://localhost:3000/users/profile', {
+      headers: { Authorization: `Bearer ${data.access_token}` },
+    });
+
+    if (!profileRes.ok) throw new Error('Failed to fetch profile');
+    const profile = await profileRes.json();
+
+    // Redirect based on role
+    switch (profile.role.toLowerCase()) {
+      case 'admin':
+        router.push('/admin');
+        break;
+      case 'librarian':
+        router.push('/librarian');
+        break;
+      case 'user':
+        router.push('/user');
+        break;
+      default:
+        router.push('/');  // or a default public page
+        break;
+    }
+  } catch (err: any) {
+    setError(err.message);
+  }
+};
+
 
   return (
     <main className={`flex flex-col items-center justify-center min-h-screen px-4 ${theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-900'}`}>
@@ -137,6 +180,24 @@ export default function LoginPage() {
         >
           Login
         </button>
+
+        {/* Wrap both in a div with text-center */}
+<div className="mt-4 space-y-2 text-center">
+  <button
+    onClick={() => router.push('/guest')}
+    className="text-blue-600 hover:underline"
+  >
+    Continue as Guest
+  </button>
+
+  <p
+    className="text-sm text-blue-600 hover:underline cursor-pointer"
+    onClick={() => router.push('/forgot-password')}
+  >
+    Forgot password?
+  </p>
+</div>
+
 
         {/* Register link */}
         <p className={`text-center text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
